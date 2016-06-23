@@ -24,6 +24,11 @@
 namespace
 {
 
+/*===========================================================================*/
+/**
+ *  @brief  Data record reader class.
+ */
+/*===========================================================================*/
 class Record
 {
     FILE* m_fp; //< file pointer
@@ -140,11 +145,16 @@ private:
     }
 };
 
+/*===========================================================================*/
+/**
+ *  @brief  Format check class.
+ */
+/*===========================================================================*/
 class Format
 {
-    std::string m_filename;
-    bool m_swap;
-    size_t m_offset;
+    std::string m_filename; ///< filename
+    bool m_swap; ///< flag for byte-swap
+    size_t m_offset; ///< offset byte
 
 public:
 
@@ -205,6 +215,13 @@ private:
 namespace ReadFieldView
 {
 
+/*===========================================================================*/
+/**
+ *  @brief  Print data information.
+ *  @param  os [in] output stream
+ *  @param  indent [in] indent
+ */
+/*===========================================================================*/
 void FieldViewData::print( std::ostream& os, const kvs::Indent& indent ) const
 {
     os << indent << "Version : " << m_version.major << "." << m_version.minor << std::endl;
@@ -230,8 +247,18 @@ void FieldViewData::print( std::ostream& os, const kvs::Indent& indent ) const
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read data from a file
+ *  @param  filename [in] filename
+ *  @return true, if the reading process is done successfully
+ */
+/*===========================================================================*/
 bool FieldViewData::read( const std::string& filename )
 {
+    setFilename( filename );
+    setSuccess( false );
+
     ::Format format( filename );
     if ( format.isAscii() )
     {
@@ -245,11 +272,26 @@ bool FieldViewData::read( const std::string& filename )
     return false;
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read data from grid and result files.
+ *  @param  gfilename [in] filename of grid data
+ *  @param  rfilename [in] filename of result data
+ *  @return true, if the reading process is done successfully
+ */
+/*===========================================================================*/
 bool FieldViewData::read( const std::string& gfilename, const std::string& rfilename )
 {
     return this->readBinaryGrid( gfilename ) && this->readBinaryResult( rfilename );
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read data from ascii type file.
+ *  @param  filename [in] filename
+ *  @return true, if the reading process is done successfully
+ */
+/*===========================================================================*/
 bool FieldViewData::readAscii( const std::string& filename )
 {
     setFilename( filename );
@@ -291,8 +333,18 @@ bool FieldViewData::readAscii( const std::string& filename )
     return true;
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read data from binary type file.
+ *  @param  filename [in] filename
+ *  @return true, if the reading process is done successfully
+ */
+/*===========================================================================*/
 bool FieldViewData::readBinary( const std::string& filename )
 {
+    setFilename( filename );
+    setSuccess( false );
+
     ::Format format( filename );
     if ( format.isBinary() )
     {
@@ -302,6 +354,15 @@ bool FieldViewData::readBinary( const std::string& filename )
     return false;
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read data from binary type file.
+ *  @param  filename [in] filename
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ *  @return true, if the reading process is done successfully
+ */
+/*===========================================================================*/
 bool FieldViewData::readBinary( const std::string& filename, bool swap, size_t offset )
 {
     setFilename( filename );
@@ -351,8 +412,18 @@ bool FieldViewData::readBinary( const std::string& filename, bool swap, size_t o
     return true;
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read data from binary type grid file
+ *  @param  filename [in] filename
+ *  @return true, if the reading process is done successfully
+ */
+/*===========================================================================*/
 bool FieldViewData::readBinaryGrid( const std::string& filename )
 {
+    setFilename( filename );
+    setSuccess( false );
+
     ::Format format( filename );
     if ( format.isBinary() )
     {
@@ -362,8 +433,18 @@ bool FieldViewData::readBinaryGrid( const std::string& filename )
     return false;
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read data from binary type grid file
+ *  @param  filename [in] filename
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ *  @return true, if the reading process is done successfully
+ */
+/*===========================================================================*/
 bool FieldViewData::readBinaryGrid( const std::string& filename, bool swap, size_t offset )
 {
+    setFilename( filename );
     setSuccess( true );
 
     FILE* fp = fopen( filename.c_str(), "rb" );
@@ -405,8 +486,18 @@ bool FieldViewData::readBinaryGrid( const std::string& filename, bool swap, size
     return true;
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read data from binary type result file
+ *  @param  filename [in] filename
+ *  @return true, if the reading process is done successfully
+ */
+/*===========================================================================*/
 bool FieldViewData::readBinaryResult( const std::string& filename )
 {
+    setFilename( filename );
+    setSuccess( false );
+
     ::Format format( filename );
     if ( format.isBinary() )
     {
@@ -416,8 +507,18 @@ bool FieldViewData::readBinaryResult( const std::string& filename )
     return false;
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read data from binary type result file
+ *  @param  filename [in] filename
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ *  @return true, if the reading process is done successfully
+ */
+/*===========================================================================*/
 bool FieldViewData::readBinaryResult( const std::string& filename, bool swap, size_t offset )
 {
+    setFilename( filename );
     setSuccess( true );
 
     FILE* fp = fopen( filename.c_str(), "rb" );
@@ -459,6 +560,12 @@ bool FieldViewData::readBinaryResult( const std::string& filename, bool swap, si
     return true;
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read version information from ascii file.
+ *  @param  fp [in] file pointer
+ */
+/*===========================================================================*/
 void FieldViewData::read_version( FILE* fp )
 {
     const size_t MaxLineLength = 256;
@@ -473,6 +580,12 @@ void FieldViewData::read_version( FILE* fp )
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read constant parameters from ascii file.
+ *  @param  fp [in] file pointer
+ */
+/*===========================================================================*/
 void FieldViewData::read_constants( FILE* fp )
 {
     const size_t MaxLineLength = 256;
@@ -496,6 +609,12 @@ void FieldViewData::read_constants( FILE* fp )
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read grid information from ascii file.
+ *  @param  fp [in] file pointer
+ */
+/*===========================================================================*/
 void FieldViewData::read_grids( FILE* fp )
 {
     const size_t MaxLineLength = 256;
@@ -512,6 +631,12 @@ void FieldViewData::read_grids( FILE* fp )
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read variable names from ascii file.
+ *  @param  fp [in] file pointer
+ */
+/*===========================================================================*/
 void FieldViewData::read_variable_names( FILE* fp )
 {
     const size_t MaxLineLength = 256;
@@ -540,6 +665,13 @@ void FieldViewData::read_variable_names( FILE* fp )
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read node data from ascii file.
+ *  @param  fp [in] file pointer
+ *  @param  gindex [in] grid index
+ */
+/*===========================================================================*/
 void FieldViewData::read_nodes( FILE* fp, size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
@@ -568,6 +700,13 @@ void FieldViewData::read_nodes( FILE* fp, size_t gindex )
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read element data from ascii file.
+ *  @param  fp [in] file pointer
+ *  @param  gindex [in] grid index
+ */
+/*===========================================================================*/
 void FieldViewData::read_elements( FILE* fp, size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
@@ -616,6 +755,13 @@ void FieldViewData::read_elements( FILE* fp, size_t gindex )
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read variable data from ascii file.
+ *  @param  fp [in] file pointer
+ *  @param  gindex [in] grid index
+ */
+/*===========================================================================*/
 void FieldViewData::read_variables( FILE* fp, size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
@@ -660,6 +806,14 @@ void FieldViewData::read_variables( FILE* fp, size_t gindex )
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read magic number from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ */
+/*===========================================================================*/
 void FieldViewData::read_magic( FILE* fp, bool swap, size_t offset )
 {
     ::Record record( fp, swap, offset );
@@ -667,12 +821,28 @@ void FieldViewData::read_magic( FILE* fp, bool swap, size_t offset )
     if ( temp != FV_MAGIC ) kvsMessageError( "Cannot find 'FV_MAGIC'." );
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read header tile from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ */
+/*===========================================================================*/
 void FieldViewData::read_title( FILE* fp, bool swap, size_t offset )
 {
     ::Record record( fp, swap, offset );
     std::string temp = record.readString( 80 ); // "FIELDVIEW"
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read version information from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ */
+/*===========================================================================*/
 void FieldViewData::read_version( FILE* fp, bool swap, size_t offset )
 {
     ::Record record( fp, swap, offset );
@@ -681,16 +851,26 @@ void FieldViewData::read_version( FILE* fp, bool swap, size_t offset )
     m_version.minor = temp[1];
 
     // In case that the version is composed of four numbers,
-    // the last two numbers will be skipped to read the version.
     int size = int( record.length() / sizeof(int) ) - 2;
     if ( size > 0 )
     {
-        // - File type code (in version 2.7): FV_GRIDS_FILE, FV_RESULTS_FILE, FV_COMBINED_FILE
-        // - Reserved field (in version 2.6): always zero
+        // The following integers are included in this record.
+        //   temp[0]: File type code (new in version 2.7)
+        //     - FV_GRIDS_FILE (1), FV_RESULTS_FILE (2), FV_COMBINED_FILE (3)
+        //   temp[1]: Reserved field (new in version 2.6)
+        //     - Always zero
         temp = record.readValues<int>( size );
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read constant paramters from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for swap byte
+ *  @param  offset [in] offset byte
+ */
+/*===========================================================================*/
 void FieldViewData::read_constants( FILE* fp, bool swap, size_t offset )
 {
     ::Record record( fp, swap, offset );
@@ -701,6 +881,14 @@ void FieldViewData::read_constants( FILE* fp, bool swap, size_t offset )
     m_constant.re = temp[3];
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read boundary conditions from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ */
+/*===========================================================================*/
 void FieldViewData::read_boundary_condition( FILE* fp, bool swap, size_t offset )
 {
     // Read number of boundary face types (m_boundary_condition.ntypes)
@@ -721,6 +909,14 @@ void FieldViewData::read_boundary_condition( FILE* fp, bool swap, size_t offset 
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read grid information from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ */
+/*===========================================================================*/
 void FieldViewData::read_grids( FILE* fp, bool swap, size_t offset )
 {
     ::Record record( fp, swap, offset );
@@ -728,6 +924,14 @@ void FieldViewData::read_grids( FILE* fp, bool swap, size_t offset )
     m_ngrids = static_cast<size_t>( ngrids );
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read variable names from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ */
+/*===========================================================================*/
 void FieldViewData::read_variable_names( FILE* fp, bool swap, size_t offset )
 {
     // Read number of variables (m_nvariables)
@@ -745,6 +949,14 @@ void FieldViewData::read_variable_names( FILE* fp, bool swap, size_t offset )
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read variable names on face from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ */
+/*===========================================================================*/
 void FieldViewData::read_variable_names_on_face( FILE* fp, bool swap, size_t offset )
 {
     // Read number of variables on face (m_nvariables_on_face)
@@ -762,6 +974,15 @@ void FieldViewData::read_variable_names_on_face( FILE* fp, bool swap, size_t off
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read node information of a grid from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ *  @param  gindex [in] grid index
+ */
+/*===========================================================================*/
 void FieldViewData::read_nnodes( FILE* fp, bool swap, size_t offset, size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
@@ -773,6 +994,15 @@ void FieldViewData::read_nnodes( FILE* fp, bool swap, size_t offset, size_t gind
     grid.nnodes = static_cast<size_t>( temp[1] );
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read node data of a grid from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ *  @param  gindex [in] grid index
+ */
+/*===========================================================================*/
 void FieldViewData::read_nodes( FILE* fp, bool swap, size_t offset, size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
@@ -792,6 +1022,15 @@ void FieldViewData::read_nodes( FILE* fp, bool swap, size_t offset, size_t ginde
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read face information of a grid from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ *  @param  gindex [in] grid index
+ */
+/*===========================================================================*/
 void FieldViewData::read_faces( FILE* fp, bool swap, size_t offset, size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
@@ -819,6 +1058,15 @@ void FieldViewData::read_faces( FILE* fp, bool swap, size_t offset, size_t ginde
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read element information of a grid from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ *  @param  gindex [in] grid index
+ */
+/*===========================================================================*/
 void FieldViewData::read_elements( FILE* fp, bool swap, size_t offset, size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
@@ -831,6 +1079,11 @@ void FieldViewData::read_elements( FILE* fp, bool swap, size_t offset, size_t gi
             kvs::ValueArray<int> temp = record.readValues<int>( 5 );
             if ( temp[0] != FV_ELEMENTS ) kvsMessageError( "Cannot find 'FV_ELEMENTS'." );
 
+            // Number of elements of each type
+            //     temp[1]: tet count
+            //     temp[2]: hex count
+            //     temp[3]: prism count
+            //     temp[4]: pyramid count
             total_count = temp[1] + temp[2] + temp[3] + temp[4];
         }
 
@@ -883,6 +1136,15 @@ void FieldViewData::read_elements( FILE* fp, bool swap, size_t offset, size_t gi
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read variable data of a grid from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ *  @param  gindex [in] grid index
+ */
+/*===========================================================================*/
 void FieldViewData::read_variables( FILE* fp, bool swap, size_t offset, size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
@@ -917,6 +1179,15 @@ void FieldViewData::read_variables( FILE* fp, bool swap, size_t offset, size_t g
     }
 }
 
+/*===========================================================================*/
+/**
+ *  @brief  Read variable data on a face of a grid from binary file.
+ *  @param  fp [in] file pointer
+ *  @param  swap [in] flag for byte-swap
+ *  @param  offset [in] offset byte
+ *  @param  gindex [inde] grid index
+ */
+/*===========================================================================*/
 void FieldViewData::read_variables_on_face( FILE* fp, bool swap, size_t offset, size_t gindex )
 {
     Grid& grid = m_grids[ gindex ];
