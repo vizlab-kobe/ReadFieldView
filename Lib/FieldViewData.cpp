@@ -682,8 +682,13 @@ void FieldViewData::read_version( FILE* fp, bool swap, size_t offset )
 
     // In case that the version is composed of four numbers,
     // the last two numbers will be skipped to read the version.
-    size_t size = ( record.length() / sizeof(int) ) - 2;
-    if ( size > 0 ) { temp = record.readValues<int>( size ); }
+    int size = int( record.length() / sizeof(int) ) - 2;
+    if ( size > 0 )
+    {
+        // - File type code (in version 2.7): FV_GRIDS_FILE, FV_RESULTS_FILE, FV_COMBINED_FILE
+        // - Reserved field (in version 2.6): always zero
+        temp = record.readValues<int>( size );
+    }
 }
 
 void FieldViewData::read_constants( FILE* fp, bool swap, size_t offset )
@@ -791,15 +796,14 @@ void FieldViewData::read_faces( FILE* fp, bool swap, size_t offset, size_t ginde
 {
     Grid& grid = m_grids[ gindex ];
 
-    size_t ntypes = m_boundary_condition.ntypes;
-    for ( size_t i = 0; i < ntypes; i++ )
+    while ( ::Record::PeekValue<int>( fp, swap, offset ) == FV_FACES )
     {
         int type = 0; // boundary type
         int nfaces = 0; // number of faces of this type
         {
             ::Record record( fp, swap, offset );
             kvs::ValueArray<int> temp = record.readValues<int>( 3 );
-            if ( temp[0] != FV_FACES ) kvsMessageError( "Cannot find 'FV_FACES'." );
+            if ( temp[0] != FV_FACES ) { kvsMessageError( "Cannot find 'FV_FACES'." ); }
 
             type = temp[1];
             nfaces = temp[2];
@@ -919,43 +923,45 @@ void FieldViewData::read_variables_on_face( FILE* fp, bool swap, size_t offset, 
 
     size_t nvariables_on_face = m_nvariables_on_face;
     size_t nfaces = m_boundary_condition.ntypes;
-
     {
         ::Record record( fp, swap, offset );
         int temp = record.readValue<int>();
         if ( temp != FV_BNDRY_VARS ) kvsMessageError( "Cannot find 'FV_BNDRY_VARS'." );
     }
 
-    ::Record record( fp, swap, offset );
-    for ( size_t i = 0; i < nvariables_on_face; i++ )
+    if ( nvariables_on_face > 0 )
     {
-        std::vector<float> data;
-        for ( size_t j = 0; j < nfaces; j++ )
+        ::Record record( fp, swap, offset );
+        for ( size_t i = 0; i < nvariables_on_face; i++ )
         {
-            if ( m_boundary_condition.results[j] == 1 )
+            std::vector<float> data;
+            for ( size_t j = 0; j < nfaces; j++ )
             {
-                float var = record.readValue<float>();
-                data.push_back( var );
+                if ( m_boundary_condition.results[j] == 1 )
+                {
+                    float var = record.readValue<float>();
+                    data.push_back( var );
+                }
             }
+
+            Variable variable;
+            variable.data = kvs::ValueArray<float>( data );
+            grid.variables_on_face.push_back( variable );
         }
 
-        Variable variable;
-        variable.data = kvs::ValueArray<float>( data );
-        grid.variables_on_face.push_back( variable );
-    }
-
-    for ( size_t i = 0; i < m_nvariables_on_face; i++ )
-    {
-        bool is_vector = ( m_variable_names_on_face[i].find( ';', 0 ) != std::string::npos );
-        if ( is_vector )
+        for ( size_t i = 0; i < m_nvariables_on_face; i++ )
         {
-            grid.variables_on_face[i++].type = 3;
-            grid.variables_on_face[i++].type = 3;
-            grid.variables_on_face[i].type = 3;
-        }
-        else
-        {
-            grid.variables_on_face[i].type = 1;
+            bool is_vector = ( m_variable_names_on_face[i].find( ';', 0 ) != std::string::npos );
+            if ( is_vector )
+            {
+                grid.variables_on_face[i++].type = 3;
+                grid.variables_on_face[i++].type = 3;
+                grid.variables_on_face[i].type = 3;
+            }
+            else
+            {
+                grid.variables_on_face[i].type = 1;
+            }
         }
     }
 }
