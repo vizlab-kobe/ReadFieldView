@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <kvs/Program>
+#include <kvs/Timer>
 #include <kvs/UnstructuredVolumeExporter>
 #include <kvs/KVSMLObjectUnstructuredVolume>
 
@@ -14,6 +15,7 @@ class Program : public kvs::Program
     int exec( int argc, char** argv )
     {
         Data data;
+        kvs::Timer timer( kvs::Timer::Start );
         if ( argc > 2 )
         {
             if ( data.read( argv[1], argv[2] ) ) data.print( std::cout << std::endl );
@@ -25,6 +27,9 @@ class Program : public kvs::Program
             else return 1;
         }
         else return 1;
+        timer.stop();
+
+        std::cout << "Reading time: " << timer.sec() << " [sec]" << std::endl;
 
         const size_t gindex = 0;
         const size_t vindex = 0;
@@ -36,7 +41,7 @@ class Program : public kvs::Program
         Object* object = ReadFieldView::ImportFieldViewData( data, etype, gindex, vindex );
         if ( !object ) return 1;
 
-        object->print( std::cout << std::endl );
+//        object->print( std::cout << std::endl );
 
         delete object;
 

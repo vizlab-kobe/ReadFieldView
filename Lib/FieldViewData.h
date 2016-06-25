@@ -125,6 +125,13 @@ public:
     const std::string& variableNameOnFace( const int index = 0 ) const { return m_variable_names_on_face[index]; }
     const Grid& grid( const int index = 0 ) const { return m_grids[index]; }
 
+    size_t totalNumberOfNodes() const;
+    size_t totalNumberOfElements( const size_t etype = 0 ) const;
+    size_t totalNumberOfTetElements() const { return this->totalNumberOfElements(1); }
+    size_t totalNumberOfHexElements() const { return this->totalNumberOfElements(2); }
+    size_t totalNumberOfPrismElements() const { return this->totalNumberOfElements(3); }
+    size_t totalNumberOfPyramidElements() const { return this->totalNumberOfElements(4); }
+
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const std::string& filename );
     bool read( const std::string& gfilename, const std::string& rfilename );

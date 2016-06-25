@@ -217,6 +217,41 @@ namespace ReadFieldView
 
 /*===========================================================================*/
 /**
+ *  @brief  Returns total number of nodes.
+ *  @return total number of nodes
+ */
+/*===========================================================================*/
+size_t FieldViewData::totalNumberOfNodes() const
+{
+    size_t nnodes = 0;
+    const size_t ngrids = this->numberOfGrids();
+    for ( size_t i = 0; i < ngrids; i++ )
+    {
+        nnodes += this->grid(i).nnodes;
+    }
+    return nnodes;
+}
+
+/*===========================================================================*/
+/**
+ *  @brief  Returns total number of elements.
+ *  @param  etype [in] element type (0:all, 1:tet, 2:hex, 3:prism, 4:pyramid)
+ *  @return total number of elements
+ */
+/*===========================================================================*/
+size_t FieldViewData::totalNumberOfElements( const size_t etype ) const
+{
+    size_t nelements = 0;
+    const size_t ngrids = this->numberOfGrids();
+    for ( size_t i = 0; i < ngrids; i++ )
+    {
+        nelements += this->grid(i).nelements[ etype ];
+    }
+    return nelements;
+}
+
+/*===========================================================================*/
+/**
  *  @brief  Print data information.
  *  @param  os [in] output stream
  *  @param  indent [in] indent

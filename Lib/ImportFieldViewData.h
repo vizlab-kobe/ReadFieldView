@@ -28,4 +28,9 @@ kvs::UnstructuredVolumeObject* ImportFieldViewData(
     const size_t gindex,
     const size_t vindex );
 
+kvs::UnstructuredVolumeObject* ImportFieldViewData(
+    const FieldViewData& data,
+    const int etype,
+    const size_t vindex );
+
 } // end of namespace ReadFieldView
