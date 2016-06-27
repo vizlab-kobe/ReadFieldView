@@ -46,6 +46,7 @@ kvs::UnstructuredVolumeObject* ImportFieldViewData(
     const size_t gindex,
     const size_t vindex )
 {
+    KVS_ASSERT( FieldViewData::Tet <= etype && etype <= FieldViewData::Pyr );
     KVS_ASSERT( gindex < data.numberOfGrids() );
     KVS_ASSERT( vindex < data.numberOfVariables() );
 
@@ -156,19 +157,19 @@ kvs::UnstructuredVolumeObject* ImportFieldViewData(
     const int etype,
     const size_t vindex )
 {
+    KVS_ASSERT( FieldViewData::Tet <= etype && etype <= FieldViewData::Pyr );
     KVS_ASSERT( vindex < data.numberOfVariables() );
 
     typedef kvs::UnstructuredVolumeObject Object;
 
     const size_t veclen = data.grid(0).variables[ vindex ].type;
     const size_t nnodes_per_cell = ::NumberOfNodesPerElement[ etype ];
-
     const size_t total_nnodes = data.totalNumberOfNodes();
     const size_t total_ncells = data.totalNumberOfElements( etype );
+
     kvs::ValueArray<kvs::Real32> coords( total_nnodes * 3 );
     kvs::ValueArray<kvs::Real32> values( total_nnodes * veclen );
     kvs::ValueArray<kvs::UInt32> connections( total_ncells * nnodes_per_cell );
-
     kvs::Real32* pcoords = coords.data();
     kvs::Real32* pvalues = values.data();
     kvs::UInt32* pconnections = connections.data();
@@ -176,15 +177,18 @@ kvs::UnstructuredVolumeObject* ImportFieldViewData(
     const size_t ngrids = data.numberOfGrids();
     for ( size_t i = 0; i < ngrids; i++ )
     {
+        // i-th grid.
         const FieldViewData::Grid& grid = data.grid(i);
 
         const size_t nnodes = data.grid(i).nnodes;
         for ( size_t j = 0; j < nnodes; j++ )
         {
+            // Coordinate values.
             *(pcoords++) = grid.nodes[j].x;
             *(pcoords++) = grid.nodes[j].y;
             *(pcoords++) = grid.nodes[j].z;
 
+            // Node values.
             for ( size_t k = 0; k < veclen; k++ )
             {
                 *(pvalues++) = grid.variables[ vindex + k ].data[j];

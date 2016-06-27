@@ -4,6 +4,7 @@
 #include <iostream>
 #include <kvs/Program>
 #include <kvs/Timer>
+#include <kvs/File>
 #include <kvs/UnstructuredVolumeExporter>
 #include <kvs/KVSMLObjectUnstructuredVolume>
 
@@ -41,14 +42,15 @@ class Program : public kvs::Program
         Object* object = ReadFieldView::ImportFieldViewData( data, etype, gindex, vindex );
         if ( !object ) return 1;
 
-//        object->print( std::cout << std::endl );
+        kvs::File file( argv[1] );
+        object->print( std::cout << std::endl );
+//        object->write( file.baseName() + ".kvsml", false );
 
         delete object;
 
         return 0;
     }
 };
-
 
 int main( int argc, char** argv )
 {
