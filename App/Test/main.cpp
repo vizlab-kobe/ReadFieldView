@@ -1,15 +1,15 @@
-#include <ReadFieldView/Lib/FieldViewData.h>
-#include <ReadFieldView/Lib/ImportFieldViewData.h>
 #include <string>
 #include <iostream>
 #include <kvs/Program>
 #include <kvs/Timer>
 #include <kvs/File>
-#include <kvs/UnstructuredVolumeExporter>
-#include <kvs/KVSMLObjectUnstructuredVolume>
+#include <kvs/FieldViewData>
+#include <kvs/UnstructuredVolumeImporter>
 
-typedef ReadFieldView::FieldViewData Data;
+
+typedef kvs::FieldViewData Data;
 typedef kvs::UnstructuredVolumeObject Object;
+typedef kvs::UnstructuredVolumeImporter Importer;
 
 class Program : public kvs::Program
 {
@@ -39,12 +39,15 @@ class Program : public kvs::Program
         if ( data.grid( gindex ).nelements[ Data::Tet ] > 0 ) { etype = Data::Tet; }
         else if ( data.grid( gindex ).nelements[ Data::Hex ] > 0 ) { etype = Data::Hex; }
 
-        Object* object = ReadFieldView::ImportFieldViewData( data, etype, gindex, vindex );
+        data.setImportingElementType( etype );
+        data.setImportingGridIndex( gindex );
+        data.setImportingVariableIndex( vindex );
+        Object* object = new Importer( &data );
         if ( !object ) return 1;
 
         kvs::File file( argv[1] );
         object->print( std::cout << std::endl );
-//        object->write( file.baseName() + ".kvsml", false );
+        //object->write( file.baseName() + ".kvsml", false );
 
         delete object;
 
